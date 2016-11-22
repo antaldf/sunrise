@@ -1,8 +1,25 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+Copyright (c) 2016 Dave Antal
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
 
 /*
  * File:   sunrise.c
@@ -17,16 +34,12 @@
 #include <unistd.h>
 #include <math.h>
 #include "pigpiod_if2.h"
+#include "sunrise.h"
 
-#define RED_PIN  17
-#define GREEN_PIN  22
-#define BLUE_PIN  24
-
-#define RED_MAX 254
-#define GREEN_MAX  150
-#define BLUE_MAX  200
 
 int riseOn(int );
+int on();
+int off();
 
 int main(int argc, char** argv) {
 
@@ -40,21 +53,24 @@ int main(int argc, char** argv) {
         }
     }
 
+
     riseOn(minutes);
+
+    off();
 
     return 0;
 
 }
-/*
-red: 100/ (1 + e^(-0.07(x-60)))
-   green: 100 / (1 + e^(-0.08(x-75)))
-   blue:  10/(1+0.005*abs(x-20)^3) +  (100*e)/(e + e^(-0.08(x-80)))
 
-*/
 int riseOn(int minutes)
 {
     double percentTime;
     time_t startTime = time(0);
+
+    time_t endTime = startTime + (minutes * 60);
+
+    time_t now = time(0);
+
     int pi =  pigpio_start(0, 0);
 
     if (pi < 0) {
@@ -62,21 +78,14 @@ int riseOn(int minutes)
         return 1;
     }
 
-    time_t endTime = startTime + (minutes * 60);
-
-    time_t now = time(0);
     while ( now < endTime )
     {
 
-
         percentTime =  (double)( now - startTime ) / (double) ( minutes * 60 );
-	precentTime = percnetTime * 100;
-	double red = 100 / exp((-0.07*(percentTime-60)));
 
-	printf("%d\n");
-//        set_PWM_dutycycle(pi, RED_PIN, (percentTime*percentTime) * RED_MAX + 1 );
-//        set_PWM_dutycycle(pi, GREEN_PIN, (percentTime*percentTime*percentTime) * GREEN_MAX - 10 );
-//        set_PWM_dutycycle(pi, BLUE_PIN, (percentTime*percentTime) * BLUE_MAX -3 );
+        set_PWM_dutycycle(pi, RED_PIN, pow(percentTime,3.00) * RED_MAX  );
+        set_PWM_dutycycle(pi, GREEN_PIN, pow(percentTime,3.00) * GREEN_MAX - 5 );
+        set_PWM_dutycycle(pi, BLUE_PIN, pow(percentTime,3.00) * BLUE_MAX  );
 
         sleep(5);
         now = time(0);
@@ -84,3 +93,36 @@ int riseOn(int minutes)
 
 	return 0;
 }
+
+int off()
+{
+    int pi =  pigpio_start(0, 0);
+    if (pi < 0) {
+        fprintf(stderr, "pigpio initialisation failed (%d).\n", pi);
+        return 1;
+    }
+
+    set_PWM_dutycycle(pi, RED_PIN, 0 );
+    set_PWM_dutycycle(pi, GREEN_PIN, 0 );
+    set_PWM_dutycycle(pi, BLUE_PIN, 0 );
+
+    return 0;
+
+}
+
+int on()
+{
+
+    int pi =  pigpio_start(0, 0);
+    if (pi < 0) {
+        fprintf(stderr, "pigpio initialisation failed (%d).\n", pi);
+        return 1;
+    }
+    set_PWM_dutycycle(pi, RED_PIN, RED_MAX );
+    set_PWM_dutycycle(pi, GREEN_PIN, GREEN_MAX );
+    set_PWM_dutycycle(pi, BLUE_PIN, BLUE_MAX );
+
+    return 0;
+
+}
+

@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-Wall -pthread  -lpigpiod_if2 -lrt
-LIBS=-lpigpiod_if2 -lrt
+LIBS=-lpigpiod_if2 -lrt -lm
 
 
 
