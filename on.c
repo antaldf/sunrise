@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 /*
- * File:   sunrise.c
+ * File:   setled.c
  * Author: dantal
  *
  * Created on November 9, 2016, 8:29 AM
@@ -38,6 +38,7 @@ int main(int argc, char** argv) {
 
 
     int pi =  pigpio_start(0, 0);
+    int rtn;
 
     if (pi < 0) {
         fprintf(stderr, "pigpio initialisation failed (%d).\n", pi);
@@ -45,10 +46,26 @@ int main(int argc, char** argv) {
     }
 
 
-        set_PWM_dutycycle(pi, RED_PIN, RED_MAX );
-        set_PWM_dutycycle(pi, GREEN_PIN, GREEN_MAX );
-        set_PWM_dutycycle(pi, BLUE_PIN, BLUE_MAX );
+    rtn = set_PWM_dutycycle(pi, RED_PIN, 255  );
+    if ( rtn != 0 )
+    {
+        fprintf(stderr,"error set dutycycle:%d\n",rtn);
+    }
 
+    rtn = set_PWM_dutycycle(pi, GREEN_PIN, GREEN_MAX );
+    if ( rtn != 0 )
+    {
+        fprintf(stderr,"error set dutycycle:%d\n",rtn);
+    }
+
+    rtn = set_PWM_dutycycle(pi, BLUE_PIN, BLUE_MAX );
+    if ( rtn != 0 )
+    {
+        fprintf(stderr,"error set dutycycle:%d\n",rtn);
+    }
+
+
+    pigpio_stop(pi);
 
     return 0;
 

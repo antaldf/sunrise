@@ -31,8 +31,8 @@ SOFTWARE.
 #define GREEN_PIN  22
 #define BLUE_PIN  24
 
-#define RED_MAX 255
-#define GREEN_MAX  180
-#define BLUE_MAX  180
+#define RED_MAX 1000
+#define GREEN_MAX  700
+#define BLUE_MAX  700
 
 
